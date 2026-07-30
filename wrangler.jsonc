@@ -1,0 +1,13 @@
+{
+  // Static-assets-only Worker: there is no `main` script, Cloudflare just
+  // serves everything under public/ from its edge network.
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "explorinfox",
+  "compatibility_date": "2026-07-01",
+  "assets": {
+    "directory": "./public",
+    // Directory-style URLs: /about-us/ resolves to /about-us/index.html
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "404-page"
+  }
+}

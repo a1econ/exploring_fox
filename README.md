@@ -6,38 +6,43 @@ Static site for **exploringfox.gr** — day and two-day sailing cruises in Greec
 
 A static snapshot of the original WordPress site (theme `ewebot` + Elementor),
 captured from the live server and cleaned up so it can be served without PHP,
-MySQL, or a VPS. Hosted on **Cloudflare Pages**.
+MySQL, or a VPS.
 
-Nothing is built or compiled — the repository root *is* the site.
+Hosted as a **Cloudflare Worker with static assets** (Worker name:
+`explorinfox`). There is no `main` script — Cloudflare simply serves everything
+under `public/` from its edge network. Nothing is built or compiled.
 
-## Cloudflare Pages settings
+## Deploying
 
-| Setting | Value |
-| --- | --- |
-| Framework preset | None |
-| Build command | *(leave empty)* |
-| Build output directory | `/` |
-| Root directory | `/` |
+Cloudflare builds from `main` automatically. The deploy command is
+`npx wrangler deploy`, which reads `wrangler.jsonc`; the dashboard build
+settings need no build command and no framework preset.
 
-> There must be **no** deploy command. `npx wrangler deploy` is for Workers and
-> will fail on a static Pages project.
+To deploy by hand:
+
+```sh
+npx wrangler deploy
+```
 
 ## Layout
 
 ```
-index.html            home
-about-us/             one directory per page, each with index.html
-services/
-events/
-photogallery/
-contact-us/
-faq/
-terms_of_use/
-privacy_policy/
-wp-content/           theme, plugin and Elementor assets + uploaded media
-wp-includes/          WordPress core JS still referenced by the theme
-robots.txt
-sitemap.xml
+wrangler.jsonc        Worker + static-asset configuration
+public/               everything served to visitors
+  index.html            home
+  about-us/             one directory per page, each with index.html
+  services/
+  events/
+  photogallery/
+  contact-us/
+  faq/
+  terms_of_use/
+  privacy_policy/
+  404.html
+  wp-content/           theme, plugin and Elementor assets + uploaded media
+  wp-includes/          WordPress core JS still referenced by the theme
+  robots.txt
+  sitemap.xml
 ```
 
 ## How it was produced
@@ -55,6 +60,9 @@ sitemap.xml
    `generator` meta, emoji detection script.
 6. Only media actually referenced by the pages was kept — 355 MB of WordPress
    thumbnails reduced to 34 MB.
+
+The one hand-written page is `public/404.html`, which the original site had no
+static equivalent of.
 
 ## Known issues carried over from the original site
 
