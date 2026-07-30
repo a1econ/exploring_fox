@@ -9,8 +9,9 @@ captured from the live server and cleaned up so it can be served without PHP,
 MySQL, or a VPS.
 
 Hosted as a **Cloudflare Worker with static assets** (Worker name:
-`explorinfox`). There is no `main` script — Cloudflare simply serves everything
-under `public/` from its edge network. Nothing is built or compiled.
+`explorinfox`). Almost everything is served straight from `public/`; the Worker
+in `src/index.js` exists only to answer the one API call the page still makes —
+see *The slider's REST calls* below. Nothing is compiled.
 
 ## Deploying
 
@@ -21,14 +22,37 @@ settings need no build command and no framework preset.
 To deploy by hand:
 
 ```sh
-npx wrangler deploy
+npx wrangler deploy      # needs Node 22+
 ```
+
+## The slider's REST calls
+
+Slider Revolution is configured to lazy-load. The homepage ships only the first
+slide inline and fetches each subsequent one at transition time from
+
+```
+/wp-json/sliderrevolution/sliders/7?engine=7&slideid=<id>
+```
+
+Without PHP those calls 404, the transition throws, and the slider sits on
+slide 1 while its progress ring keeps looping — with nothing obviously broken
+on screen.
+
+Since the site no longer changes, all seven responses were captured from the
+original server into `public/_slider/` and the Worker replays them. If the
+slider is ever re-edited, those files must be recaptured.
+
+`run_worker_first` is set for `/wp-json/*` in `wrangler.jsonc`; without it asset
+routing answers with the 404 page before the Worker runs.
 
 ## Layout
 
 ```
 wrangler.jsonc        Worker + static-asset configuration
+src/index.js          serves the captured slider responses; everything else
+                      falls through to the assets
 public/               everything served to visitors
+  _slider/              captured Slider Revolution REST responses
   index.html            home
   about-us/             one directory per page, each with index.html
   services/
