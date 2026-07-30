@@ -45,14 +45,55 @@ slider is ever re-edited, those files must be recaptured.
 `run_worker_first` is set for `/wp-json/*` in `wrangler.jsonc`; without it asset
 routing answers with the 404 page before the Worker runs.
 
+## Contact form
+
+`POST /api/contact` sends the message through [Resend](https://resend.com).
+The page keeps the original WPForms markup and styling; what changed is that
+its `wpforms-ajax-form`/`wpforms-validate` classes were dropped so the plugin's
+own handler no longer claims the submit, and the action now points at the
+Worker. Neither class appears in any stylesheet, so nothing looks different.
+
+`public/assets/contact-form.js` submits it in the background and shows the same
+"Thank you for your message" confirmation as before. If that script never runs
+the form still posts normally and the Worker answers with a plain page, so a
+JavaScript failure costs a page reload rather than the message.
+
+A hidden `website` field acts as a honeypot: anything that fills it gets a
+success response and the message is dropped.
+
+### Configuration
+
+| | | |
+| --- | --- | --- |
+| `RESEND_API_KEY` | secret | Resend key with `sending_access`, scoped to the domain |
+| `CONTACT_TO` | var | where notifications land |
+| `CONTACT_FROM` | var | verified sender — set in `wrangler.jsonc` |
+
+`CONTACT_TO` and `RESEND_API_KEY` are deliberately **not** in this repository —
+it is public and the recipient may be a personal address. Set them in the
+Cloudflare dashboard (Worker → Settings → Variables and Secrets), or:
+
+```sh
+npx wrangler secret put RESEND_API_KEY
+npx wrangler secret put CONTACT_TO
+```
+
+For local development put them in `.dev.vars` (gitignored).
+
+Sending only works once `exploringfox.gr` is verified in Resend, which needs
+SPF and DKIM records — so it depends on the DNS move to Cloudflare landing
+first. Until then the endpoint validates input and answers with a clear error.
+
 ## Layout
 
 ```
 wrangler.jsonc        Worker + static-asset configuration
-src/index.js          serves the captured slider responses; everything else
-                      falls through to the assets
+src/index.js          routes /api/contact and the captured slider responses;
+                      everything else falls through to the assets
+src/contact.js        contact form handler
 public/               everything served to visitors
   _slider/              captured Slider Revolution REST responses
+  assets/               hand-written scripts (contact form)
   index.html            home
   about-us/             one directory per page, each with index.html
   services/

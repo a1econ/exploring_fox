@@ -5,14 +5,20 @@
   "name": "explorinfox",
   "main": "src/index.js",
   "compatibility_date": "2026-07-01",
+  "vars": {
+    // Verified Resend sender. CONTACT_TO and RESEND_API_KEY are set in the
+    // dashboard instead — the recipient may be a personal address and this
+    // repository is public.
+    "CONTACT_FROM": "Contact Form exploringfox.gr <noreply@exploringfox.gr>"
+  },
   "assets": {
     "directory": "./public",
     "binding": "ASSETS",
     // Directory-style URLs: /about-us/ resolves to /about-us/index.html
     "html_handling": "auto-trailing-slash",
     "not_found_handling": "404-page",
-    // Asset routing would otherwise answer /wp-json/* with the 404 page before
-    // the Worker ever sees the request.
-    "run_worker_first": ["/wp-json/*"]
+    // Asset routing would otherwise answer these with the 404 page (or a bare
+    // 405 on POST) before the Worker ever sees the request.
+    "run_worker_first": ["/wp-json/*", "/api/*"]
   }
 }

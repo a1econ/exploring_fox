@@ -7,11 +7,18 @@
 // captured from the original server into public/_slider/ and are replayed here.
 // Everything else falls through to the static assets.
 
+import { handleContact } from './contact.js';
+
 const SLIDER_ENDPOINT = /^\/wp-json\/sliderrevolution\/sliders\/(\d+)\/?$/;
 
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
+
+    if (url.pathname === '/api/contact') {
+      return handleContact(request, env);
+    }
+
     const match = url.pathname.match(SLIDER_ENDPOINT);
 
     if (match) {
