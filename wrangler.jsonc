@@ -1,13 +1,18 @@
 {
-  // Static-assets-only Worker: there is no `main` script, Cloudflare just
-  // serves everything under public/ from its edge network.
+  // Static site plus a small Worker that replays the Slider Revolution REST
+  // responses the page expects (see src/index.js).
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "explorinfox",
+  "main": "src/index.js",
   "compatibility_date": "2026-07-01",
   "assets": {
     "directory": "./public",
+    "binding": "ASSETS",
     // Directory-style URLs: /about-us/ resolves to /about-us/index.html
     "html_handling": "auto-trailing-slash",
-    "not_found_handling": "404-page"
+    "not_found_handling": "404-page",
+    // Asset routing would otherwise answer /wp-json/* with the 404 page before
+    // the Worker ever sees the request.
+    "run_worker_first": ["/wp-json/*"]
   }
 }
