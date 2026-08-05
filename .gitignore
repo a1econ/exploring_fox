@@ -5,3 +5,6 @@ node_modules/
 .wrangler/
 .dev.vars
 .dev.vars.*
+
+# Work in progress: the frontend rebuild, not for deploy
+public/v2/
